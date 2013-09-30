@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-struct Vector2<T> { x: T, y: T}
+pub struct Vector2<T> { x: T, y: T}
 
-struct Vector3<T> { x: T, y: T, z: T}
+pub struct Vector3<T> { x: T, y: T, z: T}
 
-pub struct SimpleStruct { x: int }
+pub struct SimpleStruct { i: uint }
