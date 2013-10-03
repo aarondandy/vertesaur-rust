@@ -21,3 +21,33 @@
 pub struct Vector2<T> { x: T, y: T}
 
 pub struct Vector3<T> { x: T, y: T, z: T}
+
+impl<T:Add<T,T>> Add<Vector2<T>,Vector2<T>> for Vector2<T> {
+	fn add(&self, rhs: &Vector2<T>) -> Vector2<T> {
+		Vector2{
+			x: self.x + rhs.x,
+			y: self.y + rhs.y
+		}
+	}
+}
+
+impl<T:Sub<T,T>> Sub<Vector2<T>,Vector2<T>> for Vector2<T> {
+	fn sub(&self, rhs: &Vector2<T>) -> Vector2<T> {
+		Vector2{
+			x: self.x - rhs.x,
+			y: self.y - rhs.y
+		}
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn add_vector2_verification() {
+		let v = Vector2{x:1i,y:2i} + Vector2{x:3i,y:5i};
+		assert_eq!((v.x,v.y),(4i,7i));
+	}
+
+}

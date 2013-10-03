@@ -1,0 +1,5 @@
+/*.sublime-workspace
+/*.sublime-project
+/src/vertesaur/*.dll
+/src/*.dll
+*.exe
