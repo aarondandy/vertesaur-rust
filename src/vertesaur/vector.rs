@@ -18,27 +18,30 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-pub struct Vector2<T> { x: T, y: T}
+//pub struct Vector2<T> { x: T, y: T}
 
-pub struct Vector3<T> { x: T, y: T, z: T}
+//pub struct Vector3<T> { x: T, y: T, z: T}
 
-impl<T:Add<T,T>> Add<Vector2<T>,Vector2<T>> for Vector2<T> {
-	fn add(&self, rhs: &Vector2<T>) -> Vector2<T> {
-		Vector2{
-			x: self.x + rhs.x,
-			y: self.y + rhs.y
+macro_rules! vec_op_impl(($t:ident $i:ident $f:ident) => (
+	impl<T:$i<T,T>> $i<$t<T>,$t<T>> for $t<T> {
+		fn $f(&self, rhs: &$t<T>) -> $t<T> {
+			$t{
+				x: self.x.$f(&rhs.x),
+				y: self.y.$f(&rhs.y)
+			}
 		}
 	}
-}
+))
 
-impl<T:Sub<T,T>> Sub<Vector2<T>,Vector2<T>> for Vector2<T> {
-	fn sub(&self, rhs: &Vector2<T>) -> Vector2<T> {
-		Vector2{
-			x: self.x - rhs.x,
-			y: self.y - rhs.y
-		}
-	}
-}
+macro_rules! build_vector(($t:ident $($c:ident),*) => (
+	pub struct $t<T> { $($c: T,)*}
+
+	vec_op_impl!(Vector2 Add add)
+	vec_op_impl!(Vector2 Sub sub)
+
+))
+
+build_vector!(Vector2 x,y)
 
 #[cfg(test)]
 mod tests {
