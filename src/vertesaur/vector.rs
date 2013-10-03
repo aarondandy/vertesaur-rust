@@ -18,34 +18,39 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-//pub struct Vector2<T> { x: T, y: T}
-
-//pub struct Vector3<T> { x: T, y: T, z: T}
-
-macro_rules! vec_op_impl(($t:ident $i:ident $f:ident) => (
+macro_rules! vec_op_impl(($t:ident $i:ident $f:ident $($c:ident),*) => (
 	impl<T:$i<T,T>> $i<$t<T>,$t<T>> for $t<T> {
-		fn $f(&self, rhs: &$t<T>) -> $t<T> {
+		#[inline] fn $f(&self, rhs: &$t<T>) -> $t<T> {
 			$t{
-				x: self.x.$f(&rhs.x),
-				y: self.y.$f(&rhs.y)
+				$(
+					$c: self.$c.$f(&rhs.$c),
+				)*
 			}
 		}
 	}
 ))
 
-macro_rules! build_vector(($t:ident $($c:ident),*) => (
-	pub struct $t<T> { $($c: T,)*}
-
-	vec_op_impl!(Vector2 Add add)
-	vec_op_impl!(Vector2 Sub sub)
-
+macro_rules! build_vectors(($({$t:ident $($c:ident),*})|*) => (
+	mod generated{$(
+		pub struct $t<T> { $($c: T,)*}
+		vec_op_impl!($t Add add $($c),*)
+		vec_op_impl!($t Sub sub $($c),*)
+	)*}
 ))
 
-build_vector!(Vector2 x,y)
+
+build_vectors!(
+	{Vector2 x,y}
+	|{Vector3 x,y,z}
+	|{Vector4 x,y,z,w}
+)
 
 #[cfg(test)]
 mod tests {
-	use super::*;
+	use super::generated::*;
+
+	// the thinking here is that as the impls are generated from macros...
+	// if it works for Vector2 it should work for Vector4
 
 	#[test]
 	fn add_vector2_verification() {
