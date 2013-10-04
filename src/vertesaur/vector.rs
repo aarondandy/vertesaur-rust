@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-use std::num::{Zero};
+use std::num::{Zero,One};
 
 macro_rules! make_vector_struct(($t:ident $($c:ident),*) => (pub struct $t<T> { $($c: T),*}))
 
@@ -90,6 +90,30 @@ vec_scalar_mul_op_imp!(Vector4 x,y,z,w)
 
 vec_zero_impl!(Vector2 x,y)
 
+impl<T:Zero+One> Vector2<T> {
+	fn x_unit() -> Vector2<T> {
+		Vector2{
+			x: One::one(),
+			y: Zero::zero()
+		}
+	}
+
+	fn y_unit() -> Vector2<T> {
+		Vector2{
+			x: Zero::zero(),
+			y: One::one()
+		}
+	}
+
+}
+
+impl<T> Vector2<T> {
+	fn some_garbage(&self) -> bool {
+		false
+	}
+
+}
+
 #[cfg(test)]
 mod tests {
 	use std::num::Zero;
@@ -121,6 +145,15 @@ mod tests {
 	fn zero_vector_verification(){
 		let v : Vector2<int> = Zero::zero();
 		assert_eq!((v.x,v.y),(0i,0i));
+	}
+
+	#[test]
+	fn unit_vector2_verify() {
+		let x : Vector2<f64> = Vector2::x_unit();
+		let y : Vector2<int> = Vector2::y_unit();
+		let b = x.some_garbage();
+		assert_eq!((x.x,x.y),(1_f64,0_f64));
+		assert_eq!((y.x,y.y),(0i,1i));
 	}
 
 }
