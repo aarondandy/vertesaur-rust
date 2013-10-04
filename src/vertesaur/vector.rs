@@ -107,13 +107,6 @@ impl<T:Zero+One> Vector2<T> {
 
 }
 
-impl<T> Vector2<T> {
-	fn some_garbage(&self) -> bool {
-		false
-	}
-
-}
-
 #[cfg(test)]
 mod tests {
 	use std::num::Zero;
@@ -151,7 +144,6 @@ mod tests {
 	fn unit_vector2_verify() {
 		let x : Vector2<f64> = Vector2::x_unit();
 		let y : Vector2<int> = Vector2::y_unit();
-		let b = x.some_garbage();
 		assert_eq!((x.x,x.y),(1_f64,0_f64));
 		assert_eq!((y.x,y.y),(0i,1i));
 	}
