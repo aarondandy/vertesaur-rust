@@ -79,13 +79,11 @@ macro_rules! vec_scalar_mul_op_imp(($t:ident $($c:ident),*) => (
 	}
 ))
 
-// add+mul+zero fn impls
-// it would be ideal if this could be expanded without needing zero but $()+* fails
-macro_rules! vec_add_mul_zero_op_imp(($t:ident $($c:ident),*) => (
-	impl<T:Mul<T,T>+Add<T,T>+Zero> $t<T> {
+// add+mul fn impls
+macro_rules! vec_add_mul_op_imp(($t:ident $cf:ident,$($c:ident),*) => (
+	impl<T:Mul<T,T>+Add<T,T>> $t<T> {
 		pub fn mag_sq(&self) -> T {
-			let sum:T = Zero::zero();
-			sum$(.add(&(self.$c.mul(&self.$c))))*
+			(self.$cf * self.$cf) $(+ (self.$c * self.$c))*
 		}
 	}
 ))
@@ -123,10 +121,12 @@ vec_scalar_mul_op_imp!(Vector2 x,y)
 vec_scalar_mul_op_imp!(Vector3 x,y,z)
 vec_scalar_mul_op_imp!(Vector4 x,y,z,w)
 
-vec_add_mul_zero_op_imp!(Vector1 x)
-vec_add_mul_zero_op_imp!(Vector2 x,y)
-vec_add_mul_zero_op_imp!(Vector3 x,y,z)
-vec_add_mul_zero_op_imp!(Vector4 x,y,z,w)
+impl<T:Mul<T,T>> Vector1<T>{ //vec_add_mul_op_imp!(Vector1 x)
+	pub fn mag_sq(&self) -> T {self.x * self.x}
+}
+vec_add_mul_op_imp!(Vector2 x,y)
+vec_add_mul_op_imp!(Vector3 x,y,z)
+vec_add_mul_op_imp!(Vector4 x,y,z,w)
 
 // unit vectors
 // maybe more advanced macro tricks could generate these?
@@ -243,6 +243,12 @@ mod tests {
 	}
 
 	#[test]
+	fn mag_sq_vector2(){
+		let v = Vector2{x:3_f64, y:4_f64};
+		assert_eq!(v.mag_sq(),25_f64);
+	}
+
+	#[test]
 	fn zero_vector2(){
 		let v : Vector2<int> = Zero::zero();
 		assert_eq!((v.x,v.y),(0i,0i));
@@ -253,6 +259,7 @@ mod tests {
 		let u : Vector1<f64> = Vector1::unit();
 		assert_eq!(u.x,1_f64);
 	}
+
 	#[test]
 	fn unit_vector2() {
 		let x : Vector2<f64> = Vector2::x_unit();
