@@ -88,8 +88,19 @@ vec_simple_op_impl!(Vector4 Add add x,y,z,w)
 vec_simple_op_impl!(Vector4 Sub sub x,y,z,w)
 vec_scalar_mul_op_imp!(Vector4 x,y,z,w)
 
+vec_zero_impl!(Vector1 x)
 vec_zero_impl!(Vector2 x,y)
+vec_zero_impl!(Vector3 x,y,z)
+vec_zero_impl!(Vector4 x,y,z,w)
 
+
+impl<T:One> Vector1<T> {
+	fn unit() -> Vector1<T> {
+		Vector1{
+			x: One::one()
+		}
+	}
+}
 impl<T:Zero+One> Vector2<T> {
 	fn x_unit() -> Vector2<T> {
 		Vector2{
@@ -97,14 +108,69 @@ impl<T:Zero+One> Vector2<T> {
 			y: Zero::zero()
 		}
 	}
-
 	fn y_unit() -> Vector2<T> {
 		Vector2{
 			x: Zero::zero(),
 			y: One::one()
 		}
 	}
-
+}
+impl<T:Zero+One> Vector3<T> {
+	fn x_unit() -> Vector3<T> {
+		Vector3{
+			x: One::one(),
+			y: Zero::zero(),
+			z: Zero::zero()
+		}
+	}
+	fn y_unit() -> Vector3<T> {
+		Vector3{
+			x: Zero::zero(),
+			y: One::one(),
+			z: Zero::zero()
+		}
+	}
+	fn z_unit() -> Vector3<T> {
+		Vector3{
+			x: Zero::zero(),
+			y: Zero::zero(),
+			z: One::one()
+		}
+	}
+}
+impl<T:Zero+One> Vector4<T> {
+	fn x_unit() -> Vector4<T> {
+		Vector4{
+			x: One::one(),
+			y: Zero::zero(),
+			z: Zero::zero(),
+			w: Zero::zero()
+		}
+	}
+	fn y_unit() -> Vector4<T> {
+		Vector4{
+			x: Zero::zero(),
+			y: One::one(),
+			z: Zero::zero(),
+			w: Zero::zero()
+		}
+	}
+	fn z_unit() -> Vector4<T> {
+		Vector4{
+			x: Zero::zero(),
+			y: Zero::zero(),
+			z: One::one(),
+			w: Zero::zero()
+		}
+	}
+	fn w_unit() -> Vector4<T> {
+		Vector4{
+			x: Zero::zero(),
+			y: Zero::zero(),
+			z: Zero::zero(),
+			w: One::one()
+		}
+	}	
 }
 
 #[cfg(test)]
@@ -141,11 +207,38 @@ mod tests {
 	}
 
 	#[test]
+	fn unit_vector1_verify() {
+		let u : Vector1<f64> = Vector1::unit();
+		assert_eq!(u.x,1_f64);
+	}
+	#[test]
 	fn unit_vector2_verify() {
 		let x : Vector2<f64> = Vector2::x_unit();
 		let y : Vector2<int> = Vector2::y_unit();
 		assert_eq!((x.x,x.y),(1_f64,0_f64));
 		assert_eq!((y.x,y.y),(0i,1i));
+	}
+
+	#[test]
+	fn unit_vector3_verify() {
+		let x : Vector3<f64> = Vector3::x_unit();
+		let y : Vector3<int> = Vector3::y_unit();
+		let z : Vector3<int> = Vector3::z_unit();
+		assert_eq!((x.x,x.y,x.z),(1_f64,0_f64,0_f64));
+		assert_eq!((y.x,y.y,y.z),(0i,1i,0i));
+		assert_eq!((z.x,z.y,z.z),(0i,0i,1i));
+	}
+
+	#[test]
+	fn unit_vector4_verify() {
+		let x : Vector4<f64> = Vector4::x_unit();
+		let y : Vector4<int> = Vector4::y_unit();
+		let z : Vector4<int> = Vector4::z_unit();
+		let w : Vector4<int> = Vector4::w_unit();
+		assert_eq!((x.x,x.y,x.z,x.w),(1_f64,0_f64,0_f64,0_f64));
+		assert_eq!((y.x,y.y,y.z,y.w),(0i,1i,0i,0i));
+		assert_eq!((z.x,z.y,z.z,z.w),(0i,0i,1i,0i));
+		assert_eq!((w.x,w.y,w.z,w.w),(0i,0i,0i,1i));
 	}
 
 }
