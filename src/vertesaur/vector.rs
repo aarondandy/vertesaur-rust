@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-use std::num::{Zero,One};
+use std::num::{Zero,One,Algebraic};
 
 // the struct
 macro_rules! make_vector_struct(($t:ident $($c:ident),*) => (pub struct $t<T> { $($c: T),*}))
@@ -69,7 +69,7 @@ macro_rules! vec_simple_op_impl(($t:ident $i:ident $f:ident $($c:ident),*) => (
 // scalar multiplication
 macro_rules! vec_scalar_mul_op_imp(($t:ident $($c:ident),*) => (
 	impl<T:Mul<T,T>> Mul<T,$t<T>> for $t<T> {
-		#[inline] fn mul(&self, rhs: &T) -> $t<T> {
+		fn mul(&self, rhs: &T) -> $t<T> {
 			$t{
 				$(
 					$c: self.$c.mul(rhs)
@@ -79,11 +79,70 @@ macro_rules! vec_scalar_mul_op_imp(($t:ident $($c:ident),*) => (
 	}
 ))
 
+macro_rules! vec_general_mul_imp(($t:ident $($c:ident),*) => (
+	impl<T:Mul<T,T>> $t<T> {
+
+		fn mul_assign(&mut self, rhs: &T) {
+			$(
+				self.$c = self.$c.mul(rhs);
+			)*
+		}
+	}
+))
+
+// scalar division
+macro_rules! vec_scalar_div_op_imp(($t:ident $($c:ident),*) => (
+	impl<T:Div<T,T>> Div<T,$t<T>> for $t<T> {
+		fn div(&self, rhs: &T) -> $t<T> {
+			$t{
+				$(
+					$c: self.$c.div(rhs)
+				),*
+			}
+		}
+	}
+))
+
+macro_rules! vec_general_div_imp(($t:ident $($c:ident),*) => (
+	impl<T:Div<T,T>> $t<T> {
+
+		fn div_assign(&mut self, rhs: &T) {
+			$(
+				self.$c = self.$c.div(rhs);
+			)*
+		}
+	}
+))
+
 // add+mul fn impls
 macro_rules! vec_add_mul_op_imp(($t:ident $cf:ident,$($c:ident),*) => (
 	impl<T:Mul<T,T>+Add<T,T>> $t<T> {
 		pub fn mag_sq(&self) -> T {
 			(self.$cf * self.$cf) $(+ (self.$c * self.$c))*
+		}
+	}
+))
+
+// mag impls
+macro_rules! vec_mag_impl(($t:ident $cf:ident,$($c:ident),*) => (
+	impl<T:Mul<T,T>+Add<T,T>+Algebraic> $t<T> {
+		pub fn mag(&self) -> T {
+			//((self.$cf * self.$cf) $(+ (self.$c * self.$c))*).sqrt()
+			self.mag_sq().sqrt()
+		}
+	}
+))
+
+// normals
+macro_rules! vec_normal_impl(($t:ident) => (
+	impl<T:Div<T,T>+Mul<T,T>+Add<T,T>+Algebraic> $t<T> {
+		pub fn normal(&self) -> $t<T>{
+			self / self.mag()
+		}
+
+		pub fn normalize(&mut self) {
+			let m = self.mag();
+			self.div_assign(&m);
 		}
 	}
 ))
@@ -121,12 +180,39 @@ vec_scalar_mul_op_imp!(Vector2 x,y)
 vec_scalar_mul_op_imp!(Vector3 x,y,z)
 vec_scalar_mul_op_imp!(Vector4 x,y,z,w)
 
+vec_general_mul_imp!(Vector1 x)
+vec_general_mul_imp!(Vector2 x,y)
+vec_general_mul_imp!(Vector3 x,y,z)
+vec_general_mul_imp!(Vector4 x,y,z,w)
+
+vec_scalar_div_op_imp!(Vector1 x)
+vec_scalar_div_op_imp!(Vector2 x,y)
+vec_scalar_div_op_imp!(Vector3 x,y,z)
+vec_scalar_div_op_imp!(Vector4 x,y,z,w)
+
+vec_general_div_imp!(Vector1 x)
+vec_general_div_imp!(Vector2 x,y)
+vec_general_div_imp!(Vector3 x,y,z)
+vec_general_div_imp!(Vector4 x,y,z,w)
+
 impl<T:Mul<T,T>> Vector1<T>{ //vec_add_mul_op_imp!(Vector1 x)
 	pub fn mag_sq(&self) -> T {self.x * self.x}
 }
 vec_add_mul_op_imp!(Vector2 x,y)
 vec_add_mul_op_imp!(Vector3 x,y,z)
 vec_add_mul_op_imp!(Vector4 x,y,z,w)
+
+impl<T:Signed> Vector1<T>{ //vec_mag_impl!(Vector1 x)
+	pub fn mag(&self) -> T {self.x.abs()}
+}
+vec_mag_impl!(Vector2 x,y)
+vec_mag_impl!(Vector3 x,y,z)
+vec_mag_impl!(Vector4 x,y,z,w)
+
+//vec_normal_impl!(Vector1)
+vec_normal_impl!(Vector2)
+vec_normal_impl!(Vector3)
+vec_normal_impl!(Vector4)
 
 // unit vectors
 // maybe more advanced macro tricks could generate these?
@@ -243,15 +329,23 @@ mod tests {
 	}
 
 	#[test]
-	fn mag_sq_vector2(){
+	fn mag_vector2(){
 		let v = Vector2{x:3_f64, y:4_f64};
 		assert_eq!(v.mag_sq(),25_f64);
+		assert_eq!(v.mag(),5_f64);
 	}
 
 	#[test]
 	fn zero_vector2(){
 		let v : Vector2<int> = Zero::zero();
 		assert_eq!((v.x,v.y),(0i,0i));
+	}
+
+	#[test]
+	fn normal_vector2(){
+		let v : Vector2<f64> = Vector2{x: 3_f64,y: 0_f64};
+		let n = v.normal();
+		assert_eq!((n.x,n.y),(1_f64,0_f64));
 	}
 
 	#[test]
