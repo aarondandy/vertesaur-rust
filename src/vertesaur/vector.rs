@@ -253,6 +253,33 @@ impl<T:Sub<T,T>+Mul<T,T>> Vector2<T>{
     }
 }
 
+impl<T:Neg<T>+Clone> Vector2<T>{
+    pub fn perp_cw(&self) -> Vector2<T>{Vector2{x:self.y.clone(),y:self.x.neg()}}
+    pub fn rotate_perp_cw(&mut self){
+        let y = self.x.neg();
+        self.x = self.y.clone();
+        self.y = y;
+    }
+    pub fn perp_ccw(&self) -> Vector2<T>{
+        Vector2{x:self.y.neg(),y:self.x.clone()}
+    }
+    pub fn rotate_perp_ccw(&mut self){
+        let x = self.y.neg();
+        self.y = self.x.clone();
+        self.x = x;
+    }
+}
+
+impl<T:Mul<T,T>+Sub<T,T>> Vector3<T>{
+    pub fn cross(&self, rhs: &Vector3<T>) -> Vector3<T>{
+        Vector3{
+            x: (self.y * rhs.z)-(self.z * rhs.y),
+            y: (self.z * rhs.x)-(self.x * rhs.z),
+            z: (self.x * rhs.y)-(self.y * rhs.x)
+        }
+    }
+}
+
 // unit vectors
 // maybe more advanced macro tricks could generate these?
 impl<T:One> Vector1<T> {
@@ -416,11 +443,30 @@ mod tests {
     }
 
     #[test]
-    fn perp_dot_vector2(){
+    fn perp_vector2(){
         let a = Vector2{x:5i,y:2i};
         let b = Vector2{x:3i,y:-3i};
         assert_eq!(a.perp_dot(&b), -21i)
         assert_eq!(b.perp_dot(&a), 21i)
+        let mut t = Vector2{x:5i,y:2i};
+        t.rotate_perp_ccw();
+        assert_eq!((t.x,t.y), (-2i,5i))
+        t.rotate_perp_cw();
+        assert_eq!((t.x,t.y), (5i,2i))
+        let u = Vector2{x:5i,y:2i}.perp_ccw();
+        assert_eq!((u.x,u.y), (-2i,5i))
+        let v = Vector2{x:5i,y:2i}.perp_cw();
+        assert_eq!((v.x,v.y), (2i,-5i))
+    }
+
+    #[test]
+    fn cross_vector3(){
+        let a = Vector3{x:3i,y:-3i,z:1i};
+        let b = Vector3{x:4i,y:9i,z:2i};
+        let cf = a.cross(&b);
+        assert_eq!((cf.x,cf.y,cf.z),(-15i,-2i,39))
+        let cr = b.cross(&a);
+        assert_eq!((cr.x,cr.y,cr.z),(15i,2i,-39))
     }
 
     #[test]
