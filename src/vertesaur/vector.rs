@@ -56,10 +56,23 @@ macro_rules! vec_zero_impl(($t:ident $($c:ident),*) => (
 // simple component to vector operator abstractions
 macro_rules! vec_simple_op_impl(($t:ident $i:ident $f:ident $($c:ident),*) => (
 	impl<T:$i<T,T>> $i<$t<T>,$t<T>> for $t<T> {
-		#[inline] fn $f(&self, rhs: &$t<T>) -> $t<T> {
+		fn $f(&self, rhs: &$t<T>) -> $t<T> {
 			$t{
 				$(
 					$c: self.$c.$f(&rhs.$c)
+				),*
+			}
+		}
+	}
+))
+
+// negation
+macro_rules! vec_negate_impl(($t:ident $($c:ident),*) => (
+	impl<T:Neg<T>> Neg<$t<T>> for $t<T> {
+		fn neg(&self) -> $t<T> {
+			$t{
+				$(
+					$c: self.$c.neg()
 				),*
 			}
 		}
@@ -120,6 +133,10 @@ macro_rules! vec_add_mul_op_imp(($t:ident $cf:ident,$($c:ident),*) => (
 		pub fn mag_sq(&self) -> T {
 			(self.$cf * self.$cf) $(+ (self.$c * self.$c))*
 		}
+
+		pub fn dot(&self, rhs: &$t<T>) -> T {
+			(self.$cf * rhs.$cf) $(+ (self.$c * rhs.$c))*
+		}
 	}
 ))
 
@@ -175,6 +192,11 @@ vec_simple_op_impl!(Vector3 Sub sub x,y,z)
 vec_simple_op_impl!(Vector4 Add add x,y,z,w)
 vec_simple_op_impl!(Vector4 Sub sub x,y,z,w)
 
+vec_negate_impl!(Vector1 x)
+vec_negate_impl!(Vector2 x,y)
+vec_negate_impl!(Vector3 x,y,z)
+vec_negate_impl!(Vector4 x,y,z,w)
+
 vec_scalar_mul_op_imp!(Vector1 x)
 vec_scalar_mul_op_imp!(Vector2 x,y)
 vec_scalar_mul_op_imp!(Vector3 x,y,z)
@@ -197,6 +219,7 @@ vec_general_div_imp!(Vector4 x,y,z,w)
 
 impl<T:Mul<T,T>> Vector1<T>{ //vec_add_mul_op_imp!(Vector1 x)
 	pub fn mag_sq(&self) -> T {self.x * self.x}
+	pub fn dot(&self, rhs: &Vector1<T>) -> T { self.x * rhs.x }
 }
 vec_add_mul_op_imp!(Vector2 x,y)
 vec_add_mul_op_imp!(Vector3 x,y,z)
@@ -343,9 +366,22 @@ mod tests {
 
 	#[test]
 	fn normal_vector2(){
-		let v : Vector2<f64> = Vector2{x: 3_f64,y: 0_f64};
+		let v = Vector2{x: 3_f64,y: 0_f64};
 		let n = v.normal();
 		assert_eq!((n.x,n.y),(1_f64,0_f64));
+	}
+
+	#[test]
+	fn dot_vector2(){
+		let a = Vector2{x: 5_f64,y: 2_f64};
+		let b = Vector2{x: 3_f64,y: -3_f64};
+		assert_eq!(a.dot(&b), 9_f64);
+	}
+
+	#[test]
+	fn neg_vector2(){
+		let v = Vector2{x: 1i, y:-2i}.neg();
+		assert_eq!((v.x,v.y),(-1i,2i));
 	}
 
 	#[test]
