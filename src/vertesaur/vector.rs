@@ -257,16 +257,20 @@ impl<T:Neg<T>+Clone> Vector2<T>{
     pub fn perp_cw(&self) -> Vector2<T>{Vector2{x:self.y.clone(),y:self.x.neg()}}
     pub fn rotate_perp_cw(&mut self){
         let y = self.x.neg();
-        self.x = self.y.clone();
-        self.y = y;
+        *self = Vector2{
+            x: self.y.clone(),
+            y: y
+        };
     }
     pub fn perp_ccw(&self) -> Vector2<T>{
         Vector2{x:self.y.neg(),y:self.x.clone()}
     }
     pub fn rotate_perp_ccw(&mut self){
         let x = self.y.neg();
-        self.y = self.x.clone();
-        self.x = x;
+        *self = Vector2{
+            y: self.x.clone(),
+            x: x
+        }
     }
 }
 
@@ -284,80 +288,40 @@ impl<T:Mul<T,T>+Sub<T,T>> Vector3<T>{
 // maybe more advanced macro tricks could generate these?
 impl<T:One> Vector1<T> {
     pub fn unit() -> Vector1<T> {
-        Vector1{
-            x: One::one()
-        }
+        Vector1{x: One::one()}
     }
 }
 impl<T:Zero+One> Vector2<T> {
     pub fn x_unit() -> Vector2<T> {
-        Vector2{
-            x: One::one(),
-            y: Zero::zero()
-        }
+        Vector2{x: One::one(),y: Zero::zero()}
     }
     pub fn y_unit() -> Vector2<T> {
-        Vector2{
-            x: Zero::zero(),
-            y: One::one()
-        }
+        Vector2{x: Zero::zero(),y: One::one()}
     }
 }
 impl<T:Zero+One> Vector3<T> {
     pub fn x_unit() -> Vector3<T> {
-        Vector3{
-            x: One::one(),
-            y: Zero::zero(),
-            z: Zero::zero()
-        }
+        Vector3{x: One::one(),y: Zero::zero(),z: Zero::zero()}
     }
     pub fn y_unit() -> Vector3<T> {
-        Vector3{
-            x: Zero::zero(),
-            y: One::one(),
-            z: Zero::zero()
-        }
+        Vector3{x: Zero::zero(),y: One::one(),z: Zero::zero()}
     }
     pub fn z_unit() -> Vector3<T> {
-        Vector3{
-            x: Zero::zero(),
-            y: Zero::zero(),
-            z: One::one()
-        }
+        Vector3{x: Zero::zero(),y: Zero::zero(),z: One::one()}
     }
 }
 impl<T:Zero+One> Vector4<T> {
     pub fn x_unit() -> Vector4<T> {
-        Vector4{
-            x: One::one(),
-            y: Zero::zero(),
-            z: Zero::zero(),
-            w: Zero::zero()
-        }
+        Vector4{x: One::one(),y: Zero::zero(),z: Zero::zero(),w: Zero::zero()}
     }
     pub fn y_unit() -> Vector4<T> {
-        Vector4{
-            x: Zero::zero(),
-            y: One::one(),
-            z: Zero::zero(),
-            w: Zero::zero()
-        }
+        Vector4{x: Zero::zero(),y: One::one(),z: Zero::zero(),w: Zero::zero()}
     }
     pub fn z_unit() -> Vector4<T> {
-        Vector4{
-            x: Zero::zero(),
-            y: Zero::zero(),
-            z: One::one(),
-            w: Zero::zero()
-        }
+        Vector4{x: Zero::zero(),y: Zero::zero(),z: One::one(),w: Zero::zero()}
     }
     pub fn w_unit() -> Vector4<T> {
-        Vector4{
-            x: Zero::zero(),
-            y: Zero::zero(),
-            z: Zero::zero(),
-            w: One::one()
-        }
+        Vector4{x: Zero::zero(),y: Zero::zero(),z: Zero::zero(),w: One::one()}
     }   
 }
 
