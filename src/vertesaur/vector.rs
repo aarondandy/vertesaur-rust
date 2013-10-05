@@ -161,6 +161,16 @@ macro_rules! vec_normal_impl(($t:ident) => (
 			let m = self.mag();
 			self.div_assign(&m);
 		}
+
+		pub fn with_magnitude(&self, m:&T) -> $t<T>{
+			self * (m / self.mag())
+		}
+
+		pub fn set_magnitude(&mut self, m:&T){
+			let f = m / self.mag();
+			self.mul_assign(&f)
+		}
+
 	}
 ))
 
@@ -236,6 +246,12 @@ vec_mag_impl!(Vector4 x,y,z,w)
 vec_normal_impl!(Vector2)
 vec_normal_impl!(Vector3)
 vec_normal_impl!(Vector4)
+
+impl<T:Sub<T,T>+Mul<T,T>> Vector2<T>{
+	pub fn perp_dot(&self, rhs: &Vector2<T>) -> T {
+		(self.x * rhs.y) - (self.y * rhs.x)
+	}
+}
 
 // unit vectors
 // maybe more advanced macro tricks could generate these?
@@ -323,6 +339,22 @@ mod tests {
 	use std::num::Zero;
 	use super::*;
 
+	struct F8_2(f64,f64);
+	impl ApproxEq<F8_2> for F8_2 {
+		fn approx_epsilon() -> F8_2 {
+			F8_2(1.0e-6,1.0e-6)
+		}
+		fn approx_eq(&self, other: &F8_2) -> bool {
+			self.approx_eq_eps(other, &F8_2(1.0e-6,1.0e-6))
+		}
+		fn approx_eq_eps(&self, other: &F8_2, approx_epsilon: &F8_2) -> bool {
+			let F8_2(a,b) = *self;
+			let F8_2(c,d) = *other;
+			let F8_2(e,f) = *approx_epsilon;
+			a.approx_eq_eps(&c,&e) && b.approx_eq_eps(&d,&f)	
+		}
+	}
+
 	// only testing Vector2 here for most operations
 	// the thinking here is that as the impls are generated from macros...
 	// if it works for Vector2 it should work for Vector4
@@ -354,8 +386,13 @@ mod tests {
 	#[test]
 	fn mag_vector2(){
 		let v = Vector2{x:3_f64, y:4_f64};
+		let mut u = Vector2{x:3_f64, y:4_f64};
+		u.set_magnitude(&3_f64);
+		let t = v.with_magnitude(&2_f64);
 		assert_eq!(v.mag_sq(),25_f64);
 		assert_eq!(v.mag(),5_f64);
+		assert!(F8_2(u.x,u.y).approx_eq(&F8_2(1.8_f64,2.4_f64)))
+		assert!(F8_2(t.x,t.y).approx_eq(&F8_2(1.2_f64,1.6_f64)))
 	}
 
 	#[test]
@@ -376,6 +413,14 @@ mod tests {
 		let a = Vector2{x: 5_f64,y: 2_f64};
 		let b = Vector2{x: 3_f64,y: -3_f64};
 		assert_eq!(a.dot(&b), 9_f64);
+	}
+
+	#[test]
+	fn perp_dot_vector2(){
+		let a = Vector2{x:5i,y:2i};
+		let b = Vector2{x:3i,y:-3i};
+		assert_eq!(a.perp_dot(&b), -21i)
+		assert_eq!(b.perp_dot(&a), 21i)
 	}
 
 	#[test]
