@@ -156,21 +156,17 @@ macro_rules! vec_normal_impl(($t:ident) => (
         pub fn normal(&self) -> $t<T>{
             self / self.mag()
         }
-
         pub fn normalize(&mut self) {
             let m = self.mag();
             self.div_assign(&m);
         }
-
         pub fn with_magnitude(&self, m:&T) -> $t<T>{
             self * (m / self.mag())
         }
-
         pub fn set_magnitude(&mut self, m:&T){
             let f = m / self.mag();
             self.mul_assign(&f)
         }
-
     }
 ))
 

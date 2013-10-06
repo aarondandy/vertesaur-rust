@@ -9,3 +9,4 @@
 #[crate_type = "lib"];
 
 pub mod vector;
+pub mod point;
